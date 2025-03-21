@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login & Registration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 flex justify-center items-center h-screen">
+    <div class="flex flex-col items-center space-y-6">
+        <% if (typeof username !== 'undefined') { %>
+            <div class="bg-white p-6 rounded-lg shadow-md w-80 text-center">
+                <h2 class="text-2xl font-semibold mb-4">Hello <%= username %></h2>
+                <p class="text-gray-700">This is a protected page</p>
+                <button id="close-session" class="mt-4 bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 w-full">Logout</button>
+            </div>
+        <% } %>
+
+        <% if (typeof username === 'undefined') { %>
+            <div class="bg-white p-6 rounded-lg shadow-md w-80">
+                <form id="login-form" class="space-y-4">
+                    <h2 class="text-xl font-semibold text-center">Login</h2>
+                    <label class="block text-gray-700">Username</label>
+                    <input type="text" id="login-username" name="username" required class="w-full p-2 border border-gray-300 rounded">
+                    
+                    <label class="block text-gray-700">Password</label>
+                    <input type="password" id="login-password" name="password" required class="w-full p-2 border border-gray-300 rounded">
+                    
+                    <button type="submit" class="w-full bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">Login</button>
+                    <span class="text-sm block mt-2 text-center"></span>
+                </form>
+            </div>
+            
+            <div class="bg-white p-6 rounded-lg shadow-md w-80">
+                <form id="register-form" class="space-y-4">
+                    <h2 class="text-xl font-semibold text-center">Register</h2>
+                    <label class="block text-gray-700">Username</label>
+                    <input type="text" id="register-username" name="username" required class="w-full p-2 border border-gray-300 rounded">
+
+                    <label class="block text-gray-700">Password</label>
+                    <input type="password" id="register-password" name="password" required class="w-full p-2 border border-gray-300 rounded">
+
+                    <label class="block text-gray-700">Confirm Password</label>
+                    <input type="password" id="register-confirm-password" name="confirm-password" required class="w-full p-2 border border-gray-300 rounded">
+                    
+                    <button type="submit" class="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Register</button>
+                    <span class="text-sm block mt-2 text-center"></span>
+                </form>
+            </div>
+        <% } %>
+    </div>
+
+    <script>
+        const $ = el => document.querySelector(el)
+        
+        const loginForm = $('#login-form')
+        const loginSpan = $('#login-form span')
+
+        const registerForm = $('#register-form')
+        const registerSpan = $('#register-form span')
+
+        const logoutButton = $('#close-session')
+
+        loginForm?.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const username = $('#login-username').value
+            const password = $('#login-password').value
+
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+              .then(res => {
+                if (res.ok) {
+                    loginSpan.innerHTML = 'Started session... Redirecting...'
+                    loginSpan.classList.add('text-green-600')
+                    setTimeout(() => {
+                        window.location.href = '/protected'
+                    }, 2000)
+                } else {
+                    loginSpan.innerHTML = 'Error logging in'
+                    loginSpan.classList.add('text-red-600')
+                }
+              })
+        })
+
+        registerForm?.addEventListener('submit', async (e) => {
+            e.preventDefault()
+            const username = $('#register-username').value
+            const password = $('#register-password').value
+            const confirmPassword = $('#register-confirm-password').value
+
+            if (password !== confirmPassword) {
+                registerSpan.innerHTML = 'Passwords do not match'
+                registerSpan.classList.add('text-red-600')
+                return
+            }
+
+            fetch('/register', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username, password })
+            })
+              .then(res => {
+                if (res.ok) {
+                    registerSpan.innerHTML = 'Started session... Redirecting...'
+                    registerSpan.classList.add('text-green-600')
+                    setTimeout(() => {
+                        window.location.href = '/protected'
+                    }, 2000)
+                } else {
+                    registerSpan.innerHTML = 'Error registering'
+                    registerSpan.classList.add('text-red-600')
+                }
+              })
+        })
+
+        logoutButton?.addEventListener('click', async (e) => {
+            e.preventDefault()
+            fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+              .then(res => {
+                window.location.href = '/'
+              })
+        })
+    </script>
+</body>
+</html>
